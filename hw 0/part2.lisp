@@ -1,0 +1,7 @@
+(defun merger (a b)
+	(if (eq (cdr a) NIL) 
+		(setf (cdr a) b)
+		(setf (cdr a) (merger (cdr a) b))
+	)
+	(return-from merger a)
+)
