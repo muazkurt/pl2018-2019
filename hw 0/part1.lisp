@@ -1,19 +1,12 @@
 (load "./part2.lisp")
-(
-	defun checker (a) 
-	(
-		if (listp a) 
-		(
-			if (listp (car a)) 
-			(
-				return-from checker (checker (setf a (merger (car a) (cdr a))))
+(defun checker (a)
+	(if (or (eq a NIL) (eq (car a) NIL))
+		(return-from checker a)
+		(if (listp a)
+			(if (listp (car a))
+				(checker (merger (car a) (cdr a)))
+				(cons (car a) (checker (cdr a)))
 			) 
-			(
-				return-from checker (checker (cdr a))
-			)
-		) 
-		(
-			return-from checker NIL
 		)
-	) 
+	)
 )

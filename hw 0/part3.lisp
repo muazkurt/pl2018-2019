@@ -1,19 +1,10 @@
 (load "part2.lisp")
-(
-	defun inserti (inputList i object) 
-	(
-		if (eq i 0) 
-		(
-			return-from inserti (merger (list object) inputList)
-		) 
-		(
-			if (eq inputList NIL) 
-			(
-				return-from inserti (list object)
-			) 
-			(
-				return-from inserti (cons (car inputList) (inserti (cdr inputList) (- i 1) object))
-			)
+(defun inserti (inputList target object) 
+	(if (eq target 0) 
+		(merger object inputList)
+		(if (atom inputList) 
+			(list object)
+			(merger (car inputList) (inserti (cdr inputList) (- target 1) object))
 		)
 	)
 )
