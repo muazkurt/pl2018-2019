@@ -1,16 +1,23 @@
-
 (setq num_legal	"0123456789")
 (setq id_legal 	"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXVZ")
 
 
-
-
-(defun open_read_close (filename)
-	(let ((in (open filename :if-does-not-exist nil)))
-		(write (read-line in nil))
-	(close in))
+(defun read_all_lines (fd)
+	(setq line (read-line in nil))
+	(if (null line)
+		line
+		(cons line (foo fd))
+	)
 )
 
+(defun open_read_close (filename)
+	(setq in (open filename :if-does-not-exist nil))
+	(if (null in)
+		nil
+		(and (setq all (foo in)) (close in))
+	)
+	all
+)
 
 
 
