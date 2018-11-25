@@ -6,7 +6,7 @@
 	(setq line (read-line in nil))
 	(if (null line)
 		line
-		(cons line (foo fd))
+		(cons line (read_all_lines fd))
 	)
 )
 
@@ -14,7 +14,7 @@
 	(setq in (open filename :if-does-not-exist nil))
 	(if (null in)
 		nil
-		(and (setq all (foo in)) (close in))
+		(and (setq all (read_all_lines in)) (close in))
 	)
 	all
 )
@@ -35,7 +35,12 @@
 
 
 
-
+(defun Sign_Parser (input)
+	(if (equal '#\- (char input 0))
+		(cons '#\- (Int_Parser (subseq input 1)))
+		(Int_Parser input)
+	)
+)
 
 
 (defun ID_PARSER (input)
