@@ -8,7 +8,7 @@
 		line
 		(if (equal (length line) 0)
 			(read_all_lines fd)
-			(cons (clean_empty (ignore_white_spaces line)) (read_all_lines fd))
+			(cons line (read_all_lines fd))
 		)
 	)
 )
@@ -22,7 +22,6 @@
 )
 
 (defun ignore_white_spaces (aLine)
-
 	(cond 
 		((null aLine) aLine)
 		(T
@@ -40,6 +39,80 @@
 	)
 )
 
+(defun operator_split (aString)
+	(cond 
+		((null aString) aString)
+		(T
+			(setq 	pos_operator
+					(find_min (list (position #\+ aString :test #'equal)
+							(if (null (setf temp (position #\- aString :test #'equal)))
+								nil
+								(if (< temp (- (length aString) 1))
+									(if (null (position (char aString (+ 1 temp)) num_legal :test #'equal))
+										temp
+										nil)
+									temp))
+							(position #\/ aString :test #'equal)
+							(position #\( aString :test #'equal)
+							(position #\) aString :test #'equal)
+							(position #\* aString :test #'equal))
+						(length aString)))
+			(if (equal pos_operator (length aString))
+				(list aString)
+				(if (equal 0 pos_operator)
+					(append
+						(list (subseq aString 0 (+ 1 pos_operator)))
+						(operator_split (subseq aString (+ pos_operator 1))))
+					(if (equal pos_operator (- (length aString) 1))
+						(list 
+							(subseq aString 0 pos_operator)
+							(subseq aString pos_operator))
+						(append
+						(list 
+							(subseq aString 0 pos_operator) 
+							(subseq aString pos_operator (+ pos_operator 1)))
+							(operator_split (subseq aString (+ pos_operator 1))))
+					)
+				)
+			)
+
+		)
+	)
+)
+
+(defun find_min (aString cur_minimum)
+	(if (null aString)
+		cur_minimum
+		(if (null (car aString))
+			(find_min (cdr aString) cur_minimum)
+		 	(if (> (car aString) cur_minimum)
+				(find_min (cdr aString) cur_minimum)
+				(find_min (cdr aString) (car aString))
+			)
+		)
+	)
+)
+
+(defun collect_splited (aList)
+	(if (null aList)
+		aList
+		(append (sub_parse (car aList)) (collect_splited (cdr aList)))
+	)
+)
+
+(defun sub_parse (aList)
+	(if (null aList)
+		aList
+		(append (subsub (clean_empty (ignore_white_spaces (car aList)))) (sub_parse (cdr aList)))
+	)
+)
+
+(defun subsub (alist)
+	(if (null aList)
+		aList
+		(append (clean_empty (operator_split (car aList))) (subsub (cdr aList)))
+	)
+)
 
 (defun open_read_close (filename)
 	(setq in (open filename :if-does-not-exist nil))
@@ -47,14 +120,13 @@
 		nil
 		(and (setq all (read_all_lines in)) (close in))
 	)
-	all
+	 (sub_parse (clean_empty all))
 )
 
 
 
 (defun string_matcher (left right)
 	(if (equal 0 (length left))
-		(if (equal #\SPACE (char right 0)))
 		T
 		(if (equal (char left 0) (char right 0))
 			(string_matcher (subseq left 1) (subseq right 1))
@@ -62,9 +134,6 @@
 		)
 	)
 )
-
-
-
 
 (defun Sign_Parser (input)
 	(if (equal '#\- (char input 0))
