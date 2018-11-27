@@ -1,6 +1,39 @@
 (setq num_legal	"0123456789")
 (setq id_legal	"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXVZ")
+(setq key_legal (list "and" "or" "not" "equal" "append" "concat" "set" "deffun" "for" "while" "if" "exit"))
+(setq bin_legal (list "true" "false"))
+(setq opt_legal (list "*" "**" "/" "+" "-" ")" "("))
 
+(defun lexer (inputfilename)
+	(setq contentList (open_read_close inputfilename))
+	(tokanize inputfilename)
+)
+
+(defun tokanize (contents)
+	(if (null contents)
+		contents
+		(cond
+			((find_inList (car contents) opt_legal) (cons (list "Operator" (car contents)) (tokanize (cdr contents))))
+			((find_inList (car contents) bin_legal) (cons (list "Binary Value" (car contents)) (tokanize (cdr contents))))
+			((find_inList (car contents) keyword_list) (cons (list "Keyword" (car contents)) (tokanize (cdr contents))))
+			((check_INT (car contents)) (cons (list "Integer Value" (car contents)) (tokanize (cdr contents))))
+			((ID_PARSER (car contents)) (cons (list "Id" (car contents)) (tokanize (cdr contents))))
+			(T (write "Unknown input type") (write-line (car contents)))
+		)
+	)
+)
+
+
+
+
+(defun open_read_close (filename)
+	(setq in (open filename :if-does-not-exist nil))
+	(if (null in)
+		nil
+		(and (setq all (read_all_lines in)) (close in))
+	)
+	(find** (sub_parse (clean_empty all)))
+)
 
 (defun read_all_lines (fd)
 	(setq line (read-line in nil))
@@ -80,14 +113,14 @@
 	)
 )
 
-(defun find_min (aString cur_minimum)
-	(if (null aString)
+(defun find_min (listofIntegers cur_minimum)
+	(if (null listofIntegers)
 		cur_minimum
-		(if (null (car aString))
-			(find_min (cdr aString) cur_minimum)
-		 	(if (> (car aString) cur_minimum)
-				(find_min (cdr aString) cur_minimum)
-				(find_min (cdr aString) (car aString))
+		(if (null (car listofIntegers))
+			(find_min (cdr listofIntegers) cur_minimum)
+		 	(if (> (car listofIntegers) cur_minimum)
+				(find_min (cdr listofIntegers) cur_minimum)
+				(find_min (cdr listofIntegers) (car listofIntegers))
 			)
 		)
 	)
@@ -114,45 +147,73 @@
 	)
 )
 
-(defun open_read_close (filename)
-	(setq in (open filename :if-does-not-exist nil))
-	(if (null in)
-		nil
-		(and (setq all (read_all_lines in)) (close in))
+(defun find** (parsed_file_content)
+	(if (null parsed_file_content)
+		parsed_file_content
+		(if (equal #\* (char (car parsed_file_content) 0))
+			(if (null (cdr parsed_file_content))
+				parsed_file_content
+				(if (equal #\* (char (car (cdr parsed_file_content)) 0))
+					(append (list (concatenate 'string (car parsed_file_content) (car (cdr parsed_file_content)))) 
+						(find** (cdr (cdr parsed_file_content))))
+					(append (list (car parsed_file_content)) (find** (cdr parsed_file_content)))
+				)
+			)
+			(append (list (car parsed_file_content)) (find** (cdr parsed_file_content)))
+		)
 	)
-	 (sub_parse (clean_empty all))
 )
 
+(defun find_inList (input keyword_list)
+	(if (null keyword_list)
+		nil
+		(if (string= input (car keyword_list))
+			T
+			(find_inList input (cdr keyword_list))
+		)
+	)
+)
 
+(defun check_INT (input)
+	(if (> (length input) 1)
+		(if (equal 
+				(position (char num_legal 0) input)
+				(find_min (list 
+					(position (char num_legal 1) input)
+					(position (char num_legal 2) input)
+					(position (char num_legal 3) input)
+					(position (char num_legal 4) input)
+					(position (char num_legal 5) input)
+					(position (char num_legal 6) input)
+					(position (char num_legal 7) input)
+					(position (char num_legal 8) input)
+					(position (char num_legal 9) input))
+					(length input)))
+			nil
+			(if (equal #\- (char input 0))
+				(INT_PARSER (subseq input 1))
+				(INT_PARSER input)
+			)
+		)
+		(INT_PARSER input)
+	)
+)
 
-(defun string_matcher (left right)
-	(if (equal 0 (length left))
+(defun INT_PARSER (input)
+	(if (or (null input) (equal (length input) 0))
 		T
-		(if (equal (char left 0) (char right 0))
-			(string_matcher (subseq left 1) (subseq right 1))
+		(if (find (char input 0) num_legal :test #'equal)
+			(INT_PARSER (subseq  input 1))
 			nil
 		)
 	)
 )
 
-(defun Sign_Parser (input)
-	(if (equal '#\- (char input 0))
-		(cons '#\- (Int_Parser (subseq input 1)))
-		(Int_Parser input)
-	)
-)
-
-(defun Int_Parser (input)
-	(if (equal '#\0 (char input 0)))
-		
-
-)
-
 (defun ID_PARSER (input)
 	(if (or (null input) (equal (length input) 0))
-		nil
-		(if (find (char input 0) id_legal :test #'equalp)
-			(cons (char input 0) (ID_PARSER (subseq  input 1)))
+		T
+		(if (find (char input 0) id_legal :test #'equal)
+			(ID_PARSER (subseq  input 1))
 			nil
 		)
 	)
