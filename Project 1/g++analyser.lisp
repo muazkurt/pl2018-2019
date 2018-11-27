@@ -5,8 +5,7 @@
 (setq opt_legal (list "*" "**" "/" "+" "-" ")" "("))
 
 (defun lexer (inputfilename)
-	(setq contentList (open_read_close inputfilename))
-	(tokanize inputfilename)
+	(tokanize (open_read_close inputfilename))
 )
 
 (defun tokanize (contents)
@@ -15,16 +14,13 @@
 		(cond
 			((find_inList (car contents) opt_legal) (cons (list "Operator" (car contents)) (tokanize (cdr contents))))
 			((find_inList (car contents) bin_legal) (cons (list "Binary Value" (car contents)) (tokanize (cdr contents))))
-			((find_inList (car contents) keyword_list) (cons (list "Keyword" (car contents)) (tokanize (cdr contents))))
+			((find_inList (car contents) key_legal) (cons (list "Keyword" (car contents)) (tokanize (cdr contents))))
 			((check_INT (car contents)) (cons (list "Integer Value" (car contents)) (tokanize (cdr contents))))
 			((ID_PARSER (car contents)) (cons (list "Id" (car contents)) (tokanize (cdr contents))))
 			(T (write "Unknown input type") (write-line (car contents)))
 		)
 	)
 )
-
-
-
 
 (defun open_read_close (filename)
 	(setq in (open filename :if-does-not-exist nil))
