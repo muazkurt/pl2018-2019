@@ -17,6 +17,7 @@ flight(erzurum, edirne, 5).
 flight(edirne, erzurum, 5).
 
 flight(gaziantep, kars, 3).
+
 flight(istanbul, izmir, 3).
 flight(istanbul, ankara, 2).
 flight(istanbul, trabzon, 3).
@@ -44,11 +45,22 @@ flight(trabzon, ankara, 6).
 
 %route(X, Y, C) :- flight(X, Y, C).
 
-listcontains(X, List) :- member(X, [])
-route(X, Y, C) :- find(X, Y, [], C).
-find(X, Y, List, C) :- 
-    not(member(X, List)), 
-    flight(X, Z, Temp1), 
-    append(List, [X], List2), 
-    find(Z, Y, List2, Temp2), 
-    C = Temp1 + Temp2.
+count([],0).
+count([H|Tail], N) :-
+    [Temp|_] = Tail,
+    count(Tail, N1),
+    _|H_res = H,
+    N = H_res + N1.
+last(X,[X]).
+last(X,[_|Z]) :- last(X,Z).
+
+route(X, Y, C) :- find(X, Y, [X], Path), count(Path, C).
+
+%find(X, Y, List, C) :- flight(X, Y, C).
+
+find(X, X, _, [X]).
+
+find(X, Y, List, [[X, Cost] | Path]) :-
+    flight(X, Z, Cost),
+    not(member(Z, List)),
+    find(Z, Y, [X|List], Path).
