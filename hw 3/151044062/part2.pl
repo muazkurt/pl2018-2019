@@ -32,35 +32,16 @@ flight(kars, gaziantep, 3).
 flight(trabzon, istanbul, 3).
 flight(trabzon, ankara, 6).
 
-%flight(ankara, ankara, 0).
-%flight(antalya, antalya, 0).
-%flight(diyarbakir, diyarbakir, 0).
-%flight(erzurum, erzurum, 0).
-%flight(edirne, edirne, 0).
-%flight(gaziantep, gaziantep, 0).
-%flight(istanbul, istanbul, 0).
-%flight(izmir, izmir, 0).
-%flight(kars, kars, 0).
-%flight(trabzon, trabzon, 0).
 
-%route(X, Y, C) :- flight(X, Y, C).
+route(X, X, 0).
+route(X, Y, C) :- 
+    find(X, Y, [X], C).
 
-count([],0).
-count([H|Tail], N) :-
-    [Temp|_] = Tail,
-    count(Tail, N1),
-    _|H_res = H,
-    N = H_res + N1.
-last(X,[X]).
-last(X,[_|Z]) :- last(X,Z).
-
-route(X, Y, C) :- find(X, Y, [X], Path), count(Path, C).
-
-%find(X, Y, List, C) :- flight(X, Y, C).
-
-find(X, X, _, [X]).
-
-find(X, Y, List, [[X, Cost] | Path]) :-
-    flight(X, Z, Cost),
+sum(A, B, C) :- C is A + B.
+find(X, X, _, C) :- C is 0.
+%PS: is can be change as =
+find(X, Y, List, C) :-
+    flight(X, Z, Temp),
     not(member(Z, List)),
-    find(Z, Y, [X|List], Path).
+    find(Z, Y, [X|List], Temp1),
+    sum(Temp, Temp1, C).
